@@ -100,3 +100,5 @@ async function main() {
 if (require.main === module) {
   main().catch(err => { console.error(err); process.exit(1); });
 }
+  const newbies = ids.filter(id => !seen.has(id));
++ if (process.env.FORCE_SUMMARY === '1') await pushLine([`デバッグ: 抽出 ${ids.length} 件 / 新規 ${newbies.length} 件`]);
