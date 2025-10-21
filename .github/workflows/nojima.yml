@@ -2,7 +2,7 @@ name: nojima-watcher
 
 on:
   schedule:
-    - cron: "*/30 * * * *"   # 30分ごと（UTC基準。間隔なのでJSTでもOK）
+    - cron: "*/30 * * * *"
   workflow_dispatch:
 
 jobs:
@@ -21,6 +21,10 @@ jobs:
         run: |
           npm init -y >/dev/null 2>&1 || true
           npm i playwright@1
+
+      # ★ このステップを追加（ブラウザと依存パッケージをDL）
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
 
       - name: Run monitor
         env:
