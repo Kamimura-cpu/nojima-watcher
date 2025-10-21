@@ -40,3 +40,10 @@ jobs:
           git add nojima_seen.json || true
           git commit -m "update seen" || true
           git push || true
+          
+      - name: Run monitor
+        env:
+          LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+          LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
+          FORCE_SUMMARY: "1"   # ← 1回だけサマリーをLINEに送る
+        run: node monitor_nojima.js
