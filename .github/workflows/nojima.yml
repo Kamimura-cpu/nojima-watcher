@@ -2,8 +2,11 @@ name: nojima-watcher
 
 on:
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: "*/30 * * * *"   # 30分ごと
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   run:
@@ -22,7 +25,6 @@ jobs:
           npm init -y >/dev/null 2>&1 || true
           npm i playwright@1
 
-      # ★ このステップを追加（ブラウザと依存パッケージをDL）
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
@@ -30,6 +32,7 @@ jobs:
         env:
           LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
           LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
+          FORCE_SUMMARY: "1"     # ← デバッグでサマリーを送る
         run: node monitor_nojima.js
 
       - name: Commit state
@@ -40,10 +43,3 @@ jobs:
           git add nojima_seen.json || true
           git commit -m "update seen" || true
           git push || true
-          
-      - name: Run monitor
-        env:
-          LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
-          LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
-          FORCE_SUMMARY: "1"   # ← 1回だけサマリーをLINEに送る
-        run: node monitor_nojima.js
