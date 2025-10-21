@@ -1,5 +1,4 @@
 // ノジマの新着を拾って LINE に送る（Playwright 使用）
-// 必要な環境変数: LINE_CHANNEL_ACCESS_TOKEN, LINE_USER_ID
 const fs = require("fs");
 const path = require("path");
 const { chromium } = require("playwright");
@@ -9,8 +8,11 @@ const STATE_FILE = path.join(__dirname, "nojima_seen.json");
 const MAX_NOTIFY = 5;
 
 function loadSeen() {
-  try { return new Set(JSON.parse(fs.readFileSync(STATE_FILE, "utf-8"))); }
-  catch { return new Set(); }
+  try {
+    return new Set(JSON.parse(fs.readFileSync(STATE_FILE, "utf-8")));
+  } catch (_) {
+    return new Set();
+  }
 }
 function saveSeen(seen) {
   fs.writeFileSync(STATE_FILE, JSON.stringify([...seen].sort()), "utf-8");
@@ -82,6 +84,11 @@ async function main() {
   const ids = Object.keys(found);
   const newbies = ids.filter(id => !seen.has(id));
 
+  // ✅ ここがサマリー送信用
+  if (process.env.FORCE_SUMMARY === '1') {
+    await pushLine([`デバッグ: 抽出 ${ids.length} 件 / 新規 ${newbies.length} 件`]);
+  }
+
   if (newbies.length > 0) {
     const lines = [];
     for (const id of newbies.slice(0, MAX_NOTIFY)) {
@@ -93,12 +100,13 @@ async function main() {
     await pushLine(lines);
     saveSeen(seen);
   } else {
-    // 初回や変更なしなら静かに終了（状態ファイルだけ用意）
     saveSeen(seen);
   }
 }
+
 if (require.main === module) {
-  main().catch(err => { console.error(err); process.exit(1); });
+  main().catch(err => {
+    console.error(err);
+    process.exit(1);
+  });
 }
-  const newbies = ids.filter(id => !seen.has(id));
-+ if (process.env.FORCE_SUMMARY === '1') await pushLine([`デバッグ: 抽出 ${ids.length} 件 / 新規 ${newbies.length} 件`]);
